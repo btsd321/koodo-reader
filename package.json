@@ -22,7 +22,7 @@
     "adm-zip": "^0.5.2",
     "axios": "^0.19.2",
     "basic-ftp": "^5.0.5",
-    "better-sqlite3": "^11.6.0",
+    "better-sqlite3": "^12.8.0",
     "buffer": "^6.0.3",
     "chardet": "^2.0.0",
     "copy-text-to-clipboard": "^2.2.0",
@@ -141,6 +141,7 @@
     },
     "buildDependenciesFromSource": false,
     "nodeGypRebuild": false,
+    "npmRebuild": false,
     "fileAssociations": [
       {
         "ext": "epub",
