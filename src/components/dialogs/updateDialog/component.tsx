@@ -54,6 +54,9 @@ class UpdateInfo extends React.Component<UpdateInfoProps, UpdateInfoState> {
       } else {
         res = await checkDeveloperUpdate();
       }
+      if (!res || !res.version) {
+        return;
+      }
       const newVersion = res.version;
       await sleep(500);
       if (
