@@ -18,10 +18,10 @@ import {
 import toast from "react-hot-toast";
 import BookUtil from "../../utils/file/bookUtil";
 import i18n from "../../i18n";
-import { azureTTSVoiceList, officialVoiceList } from "../../constants/ttsList";
-import { langToName } from "../../utils/common";
-import { resetReaderRequest } from "../../utils/request/reader";
-import { resetThirdpartyRequest } from "../../utils/request/thirdparty";
+import { azureTTSVoiceList, officialVoiceList } from "../../constants/ttsList"; // eslint-disable-line @typescript-eslint/no-unused-vars
+import { langToName } from "../../utils/common"; // eslint-disable-line @typescript-eslint/no-unused-vars
+import { resetReaderRequest } from "../../utils/request/reader"; // eslint-disable-line @typescript-eslint/no-unused-vars
+import { resetThirdpartyRequest } from "../../utils/request/thirdparty"; // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export function handleBooks(books: BookModel[]) {
   return { type: "HANDLE_BOOKS", payload: books };
@@ -248,12 +248,15 @@ export function handleFetchUserInfo() {
         }
       }
     }
+    /* subscription expiry check disabled
     if (
       userInfo &&
       userInfo.valid_until < parseInt(new Date().getTime() / 1000 + "")
     ) {
       dispatch(handleShowSupport(true));
     }
+    */
+    /* token refresh disabled
     if (userInfo && userInfo.valid_until && userInfo.token_valid_until) {
       if (
         userInfo.valid_until > 0 &&
@@ -267,6 +270,7 @@ export function handleFetchUserInfo() {
         resetThirdpartyRequest();
       }
     }
+    */
     dispatch(handleUserInfo(userInfo));
   };
 }
@@ -274,152 +278,52 @@ export function handleFetchPlugins() {
   return async (dispatch: Dispatch) => {
     DatabaseService.getAllRecords("plugins").then((pluginList) => {
       try {
-        TokenService.getToken("is_authed").then((value) => {
-          let isAuthed = value === "yes";
-          if (
-            isAuthed &&
-            ConfigService.getReaderConfig("isDisableAI") !== "yes"
-          ) {
-            let dictPlugin = new PluginModel(
-              "official-ai-dict-plugin",
-              "dictionary",
-              "Official AI Dictionary",
-              "dict",
-              "1.0.0",
-              "",
-              {},
-              officialDictList,
-              [],
-              "",
-              ""
-            );
-            pluginList.push(dictPlugin);
-            let transPlugin = new PluginModel(
-              "official-ai-trans-plugin",
-              "translation",
-              "Official AI Translation",
-              "translation",
-              "1.0.0",
-              "",
-              {},
-              officialTranList,
-              [],
-              "",
-              ""
-            );
-            pluginList.push(transPlugin);
-            let sumPlugin = new PluginModel(
-              "official-ai-assistant-plugin",
-              "assistant",
-              "Official AI Assistant",
-              "assistant",
-              "1.0.0",
-              "",
-              {},
-              officialTranList,
-              [],
-              "",
-              ""
-            );
-            pluginList.push(sumPlugin);
-            let sortedVoiceList = [
-              ...officialVoiceList.map((item) => {
-                return {
-                  ...item,
-                  label:
-                    i18n.t("Official AI Voice") +
-                    " - " +
-                    item.displayName +
-                    " - " +
-                    item.language +
-                    " - " +
-                    (item.gender === "female"
-                      ? i18n.t("Female voice")
-                      : i18n.t("Male voice")),
-                };
-              }),
-              ...azureTTSVoiceList.map((item) => {
-                return {
-                  ...item,
-                  label:
-                    "Azure TTS" +
-                    " - " +
-                    item.displayName +
-                    " - " +
-                    langToName(item.locale) +
-                    " - " +
-                    (item.gender === "female"
-                      ? i18n.t("Female voice")
-                      : i18n.t("Male voice")),
-                };
-              }),
-            ];
-            let voicePlugin = new PluginModel(
-              "official-ai-voice-plugin",
-              "voice",
-              "Official AI Voice",
-              "speaker",
-              "1.0.0",
-              "",
-              {},
-              {},
-              sortedVoiceList.map((item: any) => {
-                return {
-                  ...item, // 创建新对象
-                  plugin: "official-ai-voice-plugin",
-                  config: {},
-                  displayName: item.label,
-                };
-              }),
-              "",
-              ""
-            );
-            pluginList.push(voicePlugin);
-            dispatch(handlePlugins(pluginList));
-          } else if (isAuthed) {
-            let sortedVoiceList = [
-              ...azureTTSVoiceList.map((item) => {
-                return {
-                  ...item,
-                  label:
-                    "Azure TTS" +
-                    " - " +
-                    item.displayName +
-                    " - " +
-                    langToName(item.locale) +
-                    " - " +
-                    (item.gender === "female"
-                      ? i18n.t("Female voice")
-                      : i18n.t("Male voice")),
-                };
-              }),
-            ];
-            let voicePlugin = new PluginModel(
-              "official-ai-voice-plugin",
-              "voice",
-              "Official AI Voice",
-              "speaker",
-              "1.0.0",
-              "",
-              {},
-              {},
-              sortedVoiceList.map((item: any) => {
-                return {
-                  ...item, // 创建新对象
-                  plugin: "official-ai-voice-plugin",
-                  config: {},
-                  displayName: item.label,
-                };
-              }),
-              "",
-              ""
-            );
-            pluginList.push(voicePlugin);
-            dispatch(handlePlugins(pluginList));
-          } else {
-            dispatch(handlePlugins(pluginList));
-          }
-        });
+        // Unconditionally inject official AI plugins (requests routed to custom AI)
+        if (ConfigService.getReaderConfig("isDisableAI") !== "yes") {
+          let dictPlugin = new PluginModel(
+            "official-ai-dict-plugin",
+            "dictionary",
+            "Official AI Dictionary",
+            "dict",
+            "1.0.0",
+            "",
+            {},
+            officialDictList,
+            [],
+            "",
+            ""
+          );
+          pluginList.push(dictPlugin);
+          let transPlugin = new PluginModel(
+            "official-ai-trans-plugin",
+            "translation",
+            "Official AI Translation",
+            "translation",
+            "1.0.0",
+            "",
+            {},
+            officialTranList,
+            [],
+            "",
+            ""
+          );
+          pluginList.push(transPlugin);
+          let sumPlugin = new PluginModel(
+            "official-ai-assistant-plugin",
+            "assistant",
+            "Official AI Assistant",
+            "assistant",
+            "1.0.0",
+            "",
+            {},
+            officialTranList,
+            [],
+            "",
+            ""
+          );
+          pluginList.push(sumPlugin);
+        }
+        dispatch(handlePlugins(pluginList));
       } catch (error) {
         const errorMessage =
           error instanceof Error ? error.message : String(error);

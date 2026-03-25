@@ -59,6 +59,7 @@ class PopupAssist extends React.Component<PopupAssistProps, PopupAssistState> {
             .replace(/\s{2,}/g, " ")
             .trim()
         : "";
+    /* isAuthed check for AI service removed
     if (
       (!this.state.aiService ||
         this.props.plugins.findIndex(
@@ -68,6 +69,7 @@ class PopupAssist extends React.Component<PopupAssistProps, PopupAssistState> {
     ) {
       this.setState({ isAddNew: true });
     }
+    */
     this.handleDoAnswer(originalText);
   }
   handleDoAnswer = async (text: string) => {
@@ -76,7 +78,7 @@ class PopupAssist extends React.Component<PopupAssistProps, PopupAssistState> {
         this.state.aiService &&
         this.state.aiService !== "official-ai-assistant-plugin"
       ) {
-      } else if (this.props.isAuthed) {
+      } else {
         let plugin = this.props.plugins.find(
           (item) => item.key === "official-ai-assistant-plugin"
         );

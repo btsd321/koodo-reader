@@ -51,76 +51,22 @@ const checkCloudUrlViaElectron = async (
   }
 };
 
-export const loginRegister = async (service: string, code: string) => {
-  let deviceName = detectBrowser();
-  let userRequest = await getUserRequest();
-  let response = await userRequest.loginRegister({
-    code,
-    provider: service,
-    scope: KookitConfig.LoginAuthRequest[service].extraParams.scope,
-    redirect_uri:
-      getServerRegion() === "china" && service === "microsoft"
-        ? KookitConfig.ThirdpartyConfig.cnCallbackUrl
-        : KookitConfig.ThirdpartyConfig.callbackUrl,
-    device_name: deviceName,
-    device_type: isElectron ? "Desktop" : "Browser",
-    device_os: getOSName(),
-    locale: navigator.language,
-    os_version: getOsVersionNumber(),
-    device_uuid: await TokenService.getFingerprint(),
-    app_version: packageJson.version,
-  });
-  if (response.code === 200) {
-    await TokenService.setToken("is_authed", "yes");
-    await TokenService.setToken("access_token", response.data.access_token);
-    await TokenService.setToken("refresh_token", response.data.refresh_token);
-    ConfigService.setItem("serverRegion", getServerRegion());
-  }
-  if (response.code === 503) {
-    if (isElectron) {
-      const cloudUrl =
-        getServerRegion() === "china"
-          ? KookitConfig.CloudConfig.cloudCNUrl
-          : KookitConfig.CloudConfig.cloudUrl;
-      const diagnosis = await checkCloudUrlViaElectron(cloudUrl);
-      if (diagnosis) {
-        console.error("Cloud service check failed:", diagnosis);
-        toast.error(i18n.t("Service unavailable") + ": " + diagnosis);
-      }
-    }
-  }
-  return response;
+export const loginRegister = async (_service: string, _code: string) => {
+  // Official server call disabled
+  return { code: 0, msg: "disabled" };
+  /* original login logic removed */
 };
-export const getTempToken = async () => {
-  let userRequest = await getUserRequest();
-  let response = await userRequest.getTempToken();
-  if (response.code === 200) {
-    return response;
-  } else if (response.code === 401) {
-    handleExitApp();
-    return response;
-  } else {
-    toast.error(i18n.t("Fetch failed, error code") + ": " + response.msg);
-    return response;
-  }
+export const getTempToken = async (): Promise<any> => {
+  // Official server call disabled
+  return { code: 0 };
 };
-export const fetchUserInfo = async () => {
-  let userRequest = await getUserRequest();
-  let response = await userRequest.getUserInfo();
-  if (response.code === 401 || response.code === 10002) {
-    handleExitApp();
-  }
-  return response;
+export const fetchUserInfo = async (): Promise<any> => {
+  // Official server call disabled
+  return { code: 0 };
 };
-export const updateUserConfig = async (config: any) => {
-  let userRequest = await getUserRequest();
-  let response = await userRequest.updateUserConfig(config);
-  if (response.code === 200) {
-  } else if (response.code === 401) {
-    handleExitApp();
-  } else {
-    toast.error(i18n.t("Setup failed, error code") + ": " + response.msg);
-  }
+export const updateUserConfig = async (_config: any) => {
+  // Official server call disabled
+  return;
 };
 export const getUserRequest = async () => {
   if (userRequest) {

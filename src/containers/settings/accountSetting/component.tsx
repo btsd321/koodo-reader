@@ -692,6 +692,7 @@ class AccountSetting extends React.Component<
             </select>
           )}
         </div>
+        {/* Login method selector disabled - official server removed
         {!this.props.isAuthed && (
           <div className="setting-dialog-new-title">
             <Trans>Select login method</Trans>
@@ -714,6 +715,8 @@ class AccountSetting extends React.Component<
             </select>
           </div>
         )}
+        */}
+        {/* Login tips and compare features link disabled
         {!this.props.isAuthed && (
           <>
             <div className="account-login-tips">
@@ -744,6 +747,8 @@ class AccountSetting extends React.Component<
             </div>
           </>
         )}
+        */}
+        {/* Login options, logout, account info, upgrade buttons - all disabled (official server removed)
         {this.props.isAuthed &&
           loginList.map((login) => (
             <div className="setting-dialog-new-title" key={login.value}>
@@ -1031,6 +1036,7 @@ class AccountSetting extends React.Component<
             <Trans>{"Redeem with code"}</Trans>
           </div>
         </div>
+        */}
       </>
     );
   }

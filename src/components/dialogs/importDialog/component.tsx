@@ -61,6 +61,7 @@ class ImportDialog extends React.Component<
       );
       return;
     }
+    /* isPro check removed
     if (
       driveList.find((item) => item.value === event.target.value)?.isPro &&
       !this.props.isAuthed
@@ -68,6 +69,7 @@ class ImportDialog extends React.Component<
       toast(this.props.t("This feature is not available in the free version"));
       return;
     }
+    */
     if (event.target.value === "add") {
       toast(this.props.t("Please add data source in the setting"));
       return;

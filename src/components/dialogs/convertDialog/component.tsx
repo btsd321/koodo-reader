@@ -117,6 +117,7 @@ class ConvertDialog extends React.Component<
                     name=""
                     className="lang-setting-dropdown"
                     onChange={(event) => {
+                      /* official-ai-ocr auth check disabled
                       if (
                         event.target.value === "official-ai-ocr" &&
                         !this.props.isAuthed
@@ -128,6 +129,7 @@ class ConvertDialog extends React.Component<
                         );
                         return;
                       }
+                      */
                       ConfigService.setReaderConfig(
                         "ocrEngine",
                         event.target.value

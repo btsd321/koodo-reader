@@ -74,6 +74,7 @@ class Login extends React.Component<LoginProps, LoginState> {
     nextProps: Readonly<LoginProps>,
     nextContext: any
   ): void {
+    /* Pro trial expiry prompt disabled
     if (
       nextProps.isShowSupport &&
       nextProps.isShowSupport !== this.props.isShowSupport
@@ -85,6 +86,7 @@ class Login extends React.Component<LoginProps, LoginState> {
       );
       this.props.history.push("/manager/home");
     }
+    */
   }
   handleLogin = async (code: string, service: string) => {
     if (!service || !code) {

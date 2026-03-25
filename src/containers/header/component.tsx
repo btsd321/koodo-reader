@@ -684,6 +684,7 @@ class Header extends React.Component<HeaderProps, HeaderState> {
           <div
             className="setting-icon-container"
             onClick={async () => {
+              /* free version sync restriction removed
               if (!isElectron && !this.props.isAuthed) {
                 toast(
                   this.props.t(
@@ -692,6 +693,7 @@ class Header extends React.Component<HeaderProps, HeaderState> {
                 );
                 return;
               }
+              */
               this.setState({ isSync: true });
               if (this.props.isAuthed) {
                 await this.props.handleFetchUserInfo();
@@ -720,6 +722,7 @@ class Header extends React.Component<HeaderProps, HeaderState> {
           </div>
         </div>
 
+        {/* Pro version banner disabled
         {!this.props.isAuthed && !this.state.isHidePro ? (
           <div className="header-report-container">
             <span
@@ -749,6 +752,8 @@ class Header extends React.Component<HeaderProps, HeaderState> {
             ></span>
           </div>
         ) : null}
+        */}
+        {/* Renew Pro banner disabled
         {this.props.isAuthed &&
         this.props.userInfo &&
         ((this.props.userInfo.type === "pro" &&
@@ -784,6 +789,7 @@ class Header extends React.Component<HeaderProps, HeaderState> {
             </span>
           </div>
         ) : null}
+        */}
         {KookitConfig.CloudMode !== "production" ? (
           <div className="header-report-container" style={{ right: "300px" }}>
             <span

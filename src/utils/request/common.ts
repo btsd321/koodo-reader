@@ -16,12 +16,19 @@ export const getPublicUrl = () => {
   return getServerRegion() === "china" ? CN_PUBLIC_URL : PUBLIC_URL;
 };
 export const checkDeveloperUpdate = async () => {
+  // Official server call disabled
+  return "";
+  /* original:
   let res = await axios.get(
     getPublicUrl() + `/api/update_dev?name=${navigator.language}`
   );
   return res.data.log;
+  */
 };
 export const getPluginList = async () => {
+  // Official server call disabled
+  return [];
+  /* original:
   if (cachedPluginList) {
     return cachedPluginList;
   }
@@ -30,6 +37,7 @@ export const getPluginList = async () => {
   );
   cachedPluginList = res.data.plugins;
   return res.data.plugins;
+  */
 };
 export const uploadFile = async (url: string, file: any) => {
   return new Promise<boolean>((resolve) => {
@@ -45,10 +53,14 @@ export const uploadFile = async (url: string, file: any) => {
   });
 };
 export const checkStableUpdate = async () => {
+  // Official server call disabled
+  return "";
+  /* original:
   let res = await axios.get(
     getPublicUrl() + `/api/update?name=${navigator.language}`
   );
   return res.data.log;
+  */
 };
 export const handleExitApp = async () => {
   toast.error(i18n.t("Authorization failed, please login again"));

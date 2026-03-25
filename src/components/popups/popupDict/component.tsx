@@ -91,7 +91,6 @@ class PopupDict extends React.Component<PopupDictProps, PopupDictState> {
           plugin.config
         );
       } else if (
-        this.props.isAuthed &&
         ConfigService.getReaderConfig("isDisableAI") !== "yes"
       ) {
         this.setState({
@@ -129,7 +128,6 @@ class PopupDict extends React.Component<PopupDictProps, PopupDictState> {
         );
       }
       if (
-        this.props.isAuthed &&
         ConfigService.getReaderConfig("isDisableAI") !== "yes"
       ) {
         this.handleDictionaryStream(text, isFullAnalysis);

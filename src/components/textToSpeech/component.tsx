@@ -146,6 +146,7 @@ class TextToSpeech extends React.Component<
       });
       await fetchUserInfo();
     }
+    /* official-ai-voice-plugin auth check disabled
     if (
       ConfigService.getReaderConfig("voiceEngine") ===
         "official-ai-voice-plugin" &&
@@ -153,6 +154,7 @@ class TextToSpeech extends React.Component<
     ) {
       ConfigService.setReaderConfig("voiceEngine", "system");
     }
+    */
     this.handleStartSpeech();
   };
   handlePauseAudio = async () => {

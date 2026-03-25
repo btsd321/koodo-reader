@@ -107,6 +107,7 @@ class SyncSetting extends React.Component<SettingInfoProps, SettingInfoState> {
       );
       return;
     }
+    /* isPro check removed
     if (
       driveList.find((item) => item.value === targetDrive)?.isPro &&
       !this.props.isAuthed
@@ -114,6 +115,7 @@ class SyncSetting extends React.Component<SettingInfoProps, SettingInfoState> {
       toast(this.props.t("This feature is not available in the free version"));
       return;
     }
+    */
     this.props.handleSettingDrive(targetDrive);
     let settingDrive = targetDrive;
     if (settingDrive === "icloud") {

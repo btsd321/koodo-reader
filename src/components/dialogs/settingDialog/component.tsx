@@ -20,7 +20,7 @@ import { getStorageLocation, reloadManager } from "../../../utils/common";
 import { ConfigService } from "../../../assets/lib/kookit-extra-browser.min";
 import GeneralSetting from "../../../containers/settings/generalSetting";
 import SyncSetting from "../../../containers/settings/syncSetting";
-import AccountSetting from "../../../containers/settings/accountSetting";
+import AiSetting from "../../../containers/settings/aiSetting";
 import PluginSetting from "../../../containers/settings/pluginSetting";
 declare var window: any;
 class SettingDialog extends React.Component<
@@ -143,12 +143,14 @@ class SettingDialog extends React.Component<
     ConfigService.setReaderConfig("systemFont", font);
   };
   handleSetting = (stateName: string) => {
+    /* isLemmatizeWord auth check disabled
     if (stateName === "isLemmatizeWord" && !this.props.isAuthed) {
       toast.error(
         this.props.t("This feature is not available in the free version")
       );
       return;
     }
+    */
     this.setState({ [stateName]: !this.state[stateName] } as any);
     ConfigService.setReaderConfig(
       stateName,
@@ -342,15 +344,15 @@ class SettingDialog extends React.Component<
             <span
               className="book-bookmark-title setting-tab"
               style={
-                this.props.settingMode === "account"
+                this.props.settingMode === "ai"
                   ? { fontWeight: "bold", borderBottom: "2px solid" }
                   : { opacity: 0.5 }
               }
               onClick={() => {
-                this.props.handleSettingMode("account");
+                this.props.handleSettingMode("ai");
               }}
             >
-              <Trans>Account</Trans>
+              <Trans>AI</Trans>
             </span>
           </div>
         </div>
@@ -554,8 +556,8 @@ class SettingDialog extends React.Component<
             </>
           ) : this.props.settingMode === "sync" ? (
             <SyncSetting />
-          ) : this.props.settingMode === "account" ? (
-            <AccountSetting />
+          ) : this.props.settingMode === "ai" ? (
+            <AiSetting />
           ) : (
             <PluginSetting />
           )}
