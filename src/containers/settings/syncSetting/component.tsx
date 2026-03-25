@@ -36,6 +36,13 @@ import {
   encryptToken,
   onSyncCallback,
 } from "../../../utils/request/thirdparty";
+import {
+  baiduExchangeToken,
+  getBaiduAuthUrl,
+  getBaiduAppKey,
+  getBaiduSecretKey,
+  getBaiduAppName,
+} from "../../../utils/request/baiduPan";
 import SyncService from "../../../utils/storage/syncService";
 import { updateUserConfig } from "../../../utils/request/user";
 import BookUtil from "../../../utils/file/bookUtil";
@@ -66,12 +73,51 @@ class SyncSetting extends React.Component<SettingInfoProps, SettingInfoState> {
       driveConfig: {},
       loginConfig: {},
       snapshotList: [],
+      baiduAppKey: getBaiduAppKey(),
+      baiduSecretKey: getBaiduSecretKey(),
+      baiduAppName: getBaiduAppName(),
     };
   }
   componentDidMount(): void {
     if (isElectron) {
       this.setState({
         snapshotList: getSnapshots(),
+      });
+      const { ipcRenderer } = window.require("electron");
+      ipcRenderer.on("baidu-oauth-callback", async (_event: any, config: any) => {
+        const code = config.code;
+        if (!code) return;
+        toast.loading(i18n.t("Adding"), { id: "adding-sync-id" });
+        try {
+          const tokenData = await baiduExchangeToken(code);
+          if (!tokenData) {
+            toast.error(i18n.t("Authorization failed"), { id: "adding-sync-id" });
+            return;
+          }
+          const tokenConfig = {
+            refresh_token: tokenData.refresh_token,
+            access_token: tokenData.access_token,
+            expires_at: Date.now() + tokenData.expires_in * 1000,
+            region: "0",
+            auth_date: Date.now(),
+            service: "dubox",
+            version: 1,
+          };
+          const res = await encryptToken("dubox", tokenConfig);
+          if (res.code === 200) {
+            ConfigService.setListConfig("dubox", "dataSourceList");
+            toast.success(i18n.t("Binding successful"), { id: "adding-sync-id" });
+            this.props.handleFetchDataSourceList();
+            this.props.handleSettingDrive("");
+          } else {
+            toast.error(i18n.t("Binding failed"), { id: "adding-sync-id" });
+          }
+        } catch (err) {
+          toast.error(
+            i18n.t("Authorization failed") + ": " + (err instanceof Error ? err.message : String(err)),
+            { id: "adding-sync-id" }
+          );
+        }
       });
     }
   }
@@ -162,12 +208,8 @@ class SyncSetting extends React.Component<SettingInfoProps, SettingInfoState> {
     if (
       settingDrive === "dropbox" ||
       settingDrive === "yandex" ||
-      settingDrive === "dubox" ||
-      settingDrive === "yiyiwu" ||
       settingDrive === "google" ||
       settingDrive === "boxnet" ||
-      settingDrive === "pcloud" ||
-      settingDrive === "adrive" ||
       settingDrive === "microsoft_exp" ||
       settingDrive === "microsoft"
     ) {
@@ -175,10 +217,7 @@ class SyncSetting extends React.Component<SettingInfoProps, SettingInfoState> {
         new SyncUtil(settingDrive, {}).getAuthUrl(
           getServerRegion() === "china" &&
             (settingDrive === "microsoft" ||
-              settingDrive === "microsoft_exp" ||
-              settingDrive === "dubox" ||
-              settingDrive === "yiyiwu" ||
-              settingDrive === "adrive")
+              settingDrive === "microsoft_exp")
             ? KookitConfig.ThirdpartyConfig.cnCallbackUrl
             : KookitConfig.ThirdpartyConfig.callbackUrl
         )
@@ -238,6 +277,10 @@ class SyncSetting extends React.Component<SettingInfoProps, SettingInfoState> {
     this.props.handleSettingDrive("");
   };
   handleConfirmDrive = async () => {
+    // dubox uses OAuth flow — binding is handled in baidu-oauth-callback listener
+    if (this.props.settingDrive === "dubox") {
+      return;
+    }
     let flag = true;
     for (let item of driveInputConfig[this.props.settingDrive]) {
       if (!this.state.driveConfig[item.value] && item.required) {
@@ -266,6 +309,40 @@ class SyncSetting extends React.Component<SettingInfoProps, SettingInfoState> {
       );
       if (res.code === 200) {
         ConfigService.setListConfig(this.props.settingDrive, "dataSourceList");
+        toast.success(i18n.t("Binding successful"), { id: "adding-sync-id" });
+      } else {
+        toast.error(i18n.t("Binding failed"), { id: "adding-sync-id" });
+      }
+    } else if (
+      this.props.settingDrive === "yiyiwu" ||
+      this.props.settingDrive === "pcloud" ||
+      this.props.settingDrive === "adrive"
+    ) {
+      // Bypass official server: store token directly in kookit-expected format
+      const token = this.state.driveConfig.token;
+      const service = this.props.settingDrive;
+      const tokenConfig =
+        service === "yiyiwu"
+          ? {
+              refresh_token: token,
+              access_token: token,
+              expires_at: new Date().getTime() + 30 * 60 * 1000,
+              region: "0",
+              auth_date: new Date().getTime(),
+              service,
+              version: 1,
+            }
+          : {
+              refresh_token: token,
+              region: "0",
+              auth_date: new Date().getTime(),
+              service,
+              version: 1,
+            };
+      toast.loading(i18n.t("Adding"), { id: "adding-sync-id" });
+      let res = await encryptToken(service, tokenConfig);
+      if (res.code === 200) {
+        ConfigService.setListConfig(service, "dataSourceList");
         toast.success(i18n.t("Binding successful"), { id: "adding-sync-id" });
       } else {
         toast.error(i18n.t("Binding failed"), { id: "adding-sync-id" });
@@ -501,6 +578,44 @@ class SyncSetting extends React.Component<SettingInfoProps, SettingInfoState> {
                   );
                 })}
               </>
+            ) : this.props.settingDrive === "dubox" ? (
+              <>
+                <input
+                  type="text"
+                  className="token-dialog-username-box"
+                  placeholder="AppKey"
+                  value={this.state.baiduAppKey}
+                  onChange={(e) =>
+                    this.setState({ baiduAppKey: e.target.value.trim() })
+                  }
+                />
+                <input
+                  type="password"
+                  className="token-dialog-username-box"
+                  placeholder="SecretKey"
+                  value={this.state.baiduSecretKey}
+                  onChange={(e) =>
+                    this.setState({ baiduSecretKey: e.target.value.trim() })
+                  }
+                />
+                <input
+                  type="text"
+                  className="token-dialog-username-box"
+                  placeholder={this.props.t("App Name") + " (koodo-reader)"}
+                  value={this.state.baiduAppName}
+                  onChange={(e) =>
+                    this.setState({ baiduAppName: e.target.value.trim() })
+                  }
+                />
+                <div
+                  style={{ fontSize: "12px", opacity: 0.7, marginTop: "4px" }}
+                >
+                  <Trans>
+                    Fill in your Baidu Netdisk Open Platform credentials, save,
+                    then click Authorize
+                  </Trans>
+                </div>
+              </>
             ) : (
               <>
                 <textarea
@@ -571,38 +686,38 @@ class SyncSetting extends React.Component<SettingInfoProps, SettingInfoState> {
               </div>
             )}
             <div className="token-dialog-button-container">
-              <div
-                className="voice-add-confirm"
-                onClick={async () => {
-                  if (this.props.settingDrive === "webdav") {
-                    let corsResult = await testCORS(this.state.driveConfig.url);
-
-                    if (!corsResult) {
-                      return;
+              {this.props.settingDrive !== "dubox" && (
+                <div
+                  className="voice-add-confirm"
+                  onClick={async () => {
+                    if (this.props.settingDrive === "webdav") {
+                      let corsResult = await testCORS(this.state.driveConfig.url);
+                      if (!corsResult) {
+                        return;
+                      }
                     }
-                  }
-                  if (
-                    this.props.settingDrive === "webdav" ||
-                    this.props.settingDrive === "docker" ||
-                    this.props.settingDrive === "ftp" ||
-                    this.props.settingDrive === "sftp" ||
-                    this.props.settingDrive === "mega" ||
-                    this.props.settingDrive === "s3compatible"
-                  ) {
-                    let connectionResult = await testConnection(
-                      this.props.settingDrive,
-                      this.state.driveConfig
-                    );
-                    if (!connectionResult) {
-                      return;
+                    if (
+                      this.props.settingDrive === "webdav" ||
+                      this.props.settingDrive === "docker" ||
+                      this.props.settingDrive === "ftp" ||
+                      this.props.settingDrive === "sftp" ||
+                      this.props.settingDrive === "mega" ||
+                      this.props.settingDrive === "s3compatible"
+                    ) {
+                      let connectionResult = await testConnection(
+                        this.props.settingDrive,
+                        this.state.driveConfig
+                      );
+                      if (!connectionResult) {
+                        return;
+                      }
                     }
-                  }
-                  this.handleConfirmDrive();
-                }}
-              >
-                <Trans>Bind</Trans>
-              </div>
-
+                    this.handleConfirmDrive();
+                  }}
+                >
+                  <Trans>Bind</Trans>
+                </div>
+              )}
               <div className="voice-add-button-container">
                 <div
                   className="voice-add-cancel"
@@ -613,13 +728,9 @@ class SyncSetting extends React.Component<SettingInfoProps, SettingInfoState> {
                   <Trans>Cancel</Trans>
                 </div>
                 {(this.props.settingDrive === "dropbox" ||
-                  this.props.settingDrive === "dubox" ||
                   this.props.settingDrive === "yandex" ||
-                  this.props.settingDrive === "yiyiwu" ||
                   this.props.settingDrive === "google" ||
                   this.props.settingDrive === "boxnet" ||
-                  this.props.settingDrive === "pcloud" ||
-                  this.props.settingDrive === "adrive" ||
                   this.props.settingDrive === "microsoft_exp" ||
                   this.props.settingDrive === "microsoft") && (
                   <div
@@ -630,10 +741,7 @@ class SyncSetting extends React.Component<SettingInfoProps, SettingInfoState> {
                         new SyncUtil(this.props.settingDrive, {}).getAuthUrl(
                           getServerRegion() === "china" &&
                             (this.props.settingDrive === "microsoft" ||
-                              this.props.settingDrive === "microsoft_exp" ||
-                              this.props.settingDrive === "dubox" ||
-                              this.props.settingDrive === "yiyiwu" ||
-                              this.props.settingDrive === "adrive")
+                              this.props.settingDrive === "microsoft_exp")
                             ? KookitConfig.ThirdpartyConfig.cnCallbackUrl
                             : KookitConfig.ThirdpartyConfig.callbackUrl
                         )
@@ -642,6 +750,44 @@ class SyncSetting extends React.Component<SettingInfoProps, SettingInfoState> {
                   >
                     <Trans>Authorize</Trans>
                   </div>
+                )}
+                {this.props.settingDrive === "dubox" && (
+                  <>
+                    <div
+                      className="voice-add-confirm"
+                      style={{ marginRight: "10px" }}
+                      onClick={() => {
+                        ConfigService.setItem("baiduPan_appKey", this.state.baiduAppKey);
+                        ConfigService.setItem("baiduPan_secretKey", this.state.baiduSecretKey);
+                        ConfigService.setItem(
+                          "baiduPan_appName",
+                          this.state.baiduAppName || "koodo-reader"
+                        );
+                        toast.success(this.props.t("Setup successful"));
+                      }}
+                    >
+                      <Trans>Save</Trans>
+                    </div>
+                    <div
+                      className="voice-add-confirm"
+                      style={{ marginRight: "10px" }}
+                      onClick={() => {
+                        if (!this.state.baiduAppKey) {
+                          toast.error(this.props.t("Please fill in the API Key"));
+                          return;
+                        }
+                        ConfigService.setItem("baiduPan_appKey", this.state.baiduAppKey);
+                        ConfigService.setItem("baiduPan_secretKey", this.state.baiduSecretKey);
+                        ConfigService.setItem(
+                          "baiduPan_appName",
+                          this.state.baiduAppName || "koodo-reader"
+                        );
+                        openInBrowser(getBaiduAuthUrl());
+                      }}
+                    >
+                      <Trans>Authorize</Trans>
+                    </div>
+                  </>
                 )}
                 {(this.props.settingDrive === "webdav" ||
                   this.props.settingDrive === "docker" ||

@@ -1211,6 +1211,44 @@ export const prepareThirdConfig = async (service: string, config: any) => {
       return config;
     }
 
+    // dubox uses custom Baidu API for token refresh
+    if (service === "dubox") {
+      const { baiduRefreshToken } = await import("./request/baiduPan");
+      const res = await baiduRefreshToken(config.refresh_token);
+      if (!res || !res.access_token) {
+        toast.error(
+          i18n.t(
+            "The authentication token for your data source is no longer valid, please reauthorize in the settings"
+          ),
+          { id: "syncing", duration: 6000 }
+        );
+        await TokenService.setToken("dubox_token", "");
+        SyncService.removeSyncUtil("dubox");
+        removeCloudConfig("dubox");
+        if (isElectron) {
+          const { ipcRenderer } = window.require("electron");
+          await ipcRenderer.invoke("cloud-close", { service: "dubox" });
+        }
+        ConfigService.deleteListConfig("dubox", "dataSourceList");
+        if (ConfigService.getItem("defaultSyncOption") === "dubox") {
+          ConfigService.removeItem("defaultSyncOption");
+        }
+        reloadManager();
+        return {};
+      }
+      config.refresh_token = res.refresh_token;
+      config.access_token = res.access_token;
+      config.expires_at = new Date().getTime() + res.expires_in * 1000;
+      await encryptToken("dubox", config);
+      SyncService.removeSyncUtil("dubox");
+      removeCloudConfig("dubox");
+      if (isElectron) {
+        const { ipcRenderer } = window.require("electron");
+        await ipcRenderer.invoke("cloud-close", { service: "dubox" });
+      }
+      return config;
+    }
+
     // Get access token
     let refreshToken = config.refresh_token;
     let res = await refreshThirdToken(service, refreshToken);
@@ -1244,7 +1282,6 @@ export const prepareThirdConfig = async (service: string, config: any) => {
     if (
       service === "adrive" ||
       service === "boxnet" ||
-      service === "dubox" ||
       service === "yiyiwu"
     ) {
       config.refresh_token = res.data.refresh_token;

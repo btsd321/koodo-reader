@@ -1143,6 +1143,14 @@ const handleCallback = (url) => {
     const state = parsedUrl.searchParams.get("state");
     const pickerData = parsedUrl.searchParams.get("pickerData");
 
+    // 百度网盘 OAuth 回调
+    if (parsedUrl.hostname === "oauth" && parsedUrl.pathname === "/baidu") {
+      if (code && mainWin) {
+        mainWin.webContents.send("baidu-oauth-callback", { code });
+      }
+      return;
+    }
+
     if (code && mainWin) {
       mainWin.webContents.send("oauth-callback", { code, state });
     }

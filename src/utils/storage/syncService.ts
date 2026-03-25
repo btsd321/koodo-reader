@@ -4,6 +4,7 @@ import {
 } from "../../assets/lib/kookit-extra-browser.min";
 import { isTokenExpired } from "../common";
 import { getCloudConfig } from "../file/common";
+import { BaiduSyncUtil } from "./baiduSyncUtil";
 
 class SyncService {
   private static syncUtilCache: { [key: string]: SyncUtil } = {};
@@ -15,8 +16,11 @@ class SyncService {
     }
     if (!this.syncUtilCache[service] || (await isTokenExpired(service))) {
       let config = await getCloudConfig(service);
-
-      this.syncUtilCache[service] = new SyncUtil(service, config);
+      if (service === "dubox") {
+        this.syncUtilCache[service] = new BaiduSyncUtil(config) as any;
+      } else {
+        this.syncUtilCache[service] = new SyncUtil(service, config);
+      }
     }
     return this.syncUtilCache[service];
   }
@@ -27,8 +31,11 @@ class SyncService {
     if (!this.pickerUtilCache[service] || (await isTokenExpired(service))) {
       let config = await getCloudConfig(service);
       config.baseFolder = "";
-
-      this.pickerUtilCache[service] = new SyncUtil(service, config);
+      if (service === "dubox") {
+        this.pickerUtilCache[service] = new BaiduSyncUtil(config) as any;
+      } else {
+        this.pickerUtilCache[service] = new SyncUtil(service, config);
+      }
     }
     return this.pickerUtilCache[service];
   }

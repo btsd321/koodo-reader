@@ -41,4 +41,7 @@ export interface SettingInfoState {
   settingLogin: string;
   isAddNew: boolean;
   snapshotList: { file: string; time: number }[];
+  baiduAppKey: string;
+  baiduSecretKey: string;
+  baiduAppName: string;
 }
