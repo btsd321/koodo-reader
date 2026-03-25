@@ -17,11 +17,6 @@ import {
 } from "../../constants/settingList";
 import toast from "react-hot-toast";
 import BookUtil from "../../utils/file/bookUtil";
-import i18n from "../../i18n";
-import { azureTTSVoiceList, officialVoiceList } from "../../constants/ttsList"; // eslint-disable-line @typescript-eslint/no-unused-vars
-import { langToName } from "../../utils/common"; // eslint-disable-line @typescript-eslint/no-unused-vars
-import { resetReaderRequest } from "../../utils/request/reader"; // eslint-disable-line @typescript-eslint/no-unused-vars
-import { resetThirdpartyRequest } from "../../utils/request/thirdparty"; // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export function handleBooks(books: BookModel[]) {
   return { type: "HANDLE_BOOKS", payload: books };
