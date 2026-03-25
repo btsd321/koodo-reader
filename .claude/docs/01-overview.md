@@ -22,7 +22,11 @@ EPUB、PDF、MOBI、AZW3、AZW、CBZ、CBR、CBT、CB7、FB2
 
 ## 云同步支持
 
-WebDAV、FTP、SFTP、AWS S3、Mega、OneDrive、Google Drive、Dropbox
+WebDAV、FTP、SFTP、AWS S3、Mega、OneDrive、Google Drive、Dropbox、百度网盘（OAuth 2.0）
+
+## 自定义 AI 支持
+
+官方服务器 AI 调用已禁用，改为通过 `src/utils/request/customAI.ts` 支持配置第三方 AI 服务（API Key、模型、端点），功能包括 AI 翻译、AI 词典、AI 总结。配置入口：`containers/settings/aiSetting`。
 
 ## 目录结构
 

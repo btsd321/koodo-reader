@@ -42,8 +42,9 @@
 
 通过 `containers/settings/` 下的子模块管理：
 - `generalSetting` - 通用设置
-- `syncSetting` - 云同步设置
-- `accountSetting` - 账户设置
+- `syncSetting` - 云同步设置（支持百度网盘 OAuth 2.0 授权）
+- `accountSetting` - 账户设置（官方账户相关功能已禁用）
+- `aiSetting` - 自定义 AI 配置（API Key、模型、端点，替代官方 AI 服务）
 - `pluginSetting` - 插件设置
 
 ## 国际化
